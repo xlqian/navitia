@@ -120,7 +120,7 @@ struct RAPTOR
 	 * stop points de départs, vers plusieurs stoppoints d'arrivée,
 	 * à une heure donnée.
 	 */
-    std::vector<Path>
+    std::vector<std::pair<type::EntryPoint, std::vector<Path>>>
     compute_nm_all(const std::vector<std::pair<type::EntryPoint, std::vector<std::pair<type::idx_t, navitia::time_duration> > > > &departures,
                             const std::vector<std::pair<type::EntryPoint, std::vector<std::pair<type::idx_t, navitia::time_duration> > > > &arrivals,
                             const DateTime &departure_datetime,
