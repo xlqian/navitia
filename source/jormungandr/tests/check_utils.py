@@ -942,7 +942,7 @@ def get_interpreter():
     It should only be used in unit tests.
     :return: str
     """
-    # sys.executable is the whole pah of the interpreter
+    # sys.executable is the whole path of the interpreter
     exe = sys.executable
 
     if 'python' in exe:

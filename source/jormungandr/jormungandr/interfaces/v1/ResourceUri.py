@@ -118,15 +118,15 @@ class add_computed_resources(object):
             collection = None
             kwargs["_external"] = True
             templated = True
-            for key in data:
-                if key in collections_to_resource_type:
+            for key in data.keys():
+                if key in collections_to_resource_type.keys():
                     collection = key
-                if key in resource_type_to_collection:
+                if key in resource_type_to_collection.keys():
                     collection = resource_type_to_collection[key]
             if collection is None:
                 return response
             kwargs["uri"] = collection + '/'
-            if "id" in kwargs:
+            if "id" in kwargs.keys():
                 kwargs["uri"] += kwargs["id"]
                 del kwargs["id"]
                 templated = False
@@ -172,23 +172,25 @@ class complete_links(object):
         self.resource = resource
     def complete(self, data, collect):
         queue = deque()
-        result = deque()
-        queue.extend(data.itervalues())
+        result = []
+        for v in data.itervalues():
+            queue.append(v)
         collect_type = collect["type"]
-        del_types = collect["del"]
         while queue:
             elem = queue.pop()
             if isinstance(elem, (list, tuple)):
                 queue.extend(elem)
             elif hasattr(elem, 'iterkeys'):
-                if elem.get('type', None) == collect_type:
+                if 'type' in elem and elem['type'] == collect_type:
                     if collect_type == "notes":
                         result.append({"id": elem['id'], "value": elem['value'], "type": collect_type})
                     elif collect_type == "exceptions":
-                        type_ = "Add" if not elem['except_type'] else "Remove"
+                        type_= "Remove"
+                        if elem['except_type'] == 0:
+                            type_ = "Add"
                         result.append({"id": elem['id'], "date": elem['date'], "type" : type_})
-
-                    [elem.pop(del_) for del_ in del_types]
+                    for del_ in collect["del"]:
+                        del elem[del_]
                 else:
                     queue.extend(elem.itervalues())
         return result

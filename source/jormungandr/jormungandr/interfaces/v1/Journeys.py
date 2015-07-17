@@ -277,20 +277,20 @@ class add_journey_href(object):
             objects = f(*args, **kwargs)
             if objects[1] != 200:
                 return objects
-            if not "journeys" in objects[0]:
+            if not "journeys" in objects[0].keys():
                 return objects
-            if "region" in kwargs:
+            if "region" in kwargs.keys():
                 del kwargs["region"]
-            if "uri" in kwargs:
+            if "uri" in kwargs.keys():
                 kwargs["from"] = kwargs["uri"].split("/")[-1]
                 del kwargs["uri"]
-            if "lon" in kwargs and "lat" in kwargs:
-                if not "from" in kwargs:
+            if "lon" in kwargs.keys() and "lat" in kwargs.keys():
+                if not "from" in kwargs.keys():
                     kwargs["from"] = kwargs["lon"] + ';' + kwargs["lat"]
                 del kwargs["lon"]
                 del kwargs["lat"]
             for journey in objects[0]['journeys']:
-                if not "sections" in journey:
+                if not "sections" in journey.keys():
                     kwargs["datetime"] = journey["requested_date_time"]
                     kwargs["to"] = journey["to"]["id"]
                     journey['links'] = [create_external_link("v1.journeys", rel="journeys", **kwargs)]
@@ -385,9 +385,9 @@ class add_journey_pagination(object):
         datetime_last = None
         try:
             list_journeys = [journey for journey in resp['journeys']
-                             if 'arrival_date_time' in journey and
+                             if 'arrival_date_time' in journey.keys() and
                              journey['arrival_date_time'] != '' and
-                             'departure_date_time' in journey and
+                             'departure_date_time' in journey.keys() and
                              journey['departure_date_time'] != '']
             asap_min = min(list_journeys,
                            key=itemgetter('departure_date_time'))
@@ -417,19 +417,19 @@ class add_fare_links(object):
             objects = f(*args, **kwargs)
             if objects[1] != 200:
                 return objects
-            if "journeys" not in objects[0]:
+            if not "journeys" in objects[0].keys():
                 return objects
             ticket_by_section = defaultdict(list)
-            if 'tickets' not in objects[0]:
+            if not 'tickets' in objects[0].keys():
                 return objects
 
             for t in objects[0]['tickets']:
-                if "links" in t:
+                if "links" in t.keys():
                     for s in t['links']:
                         ticket_by_section[s['id']].append(t['id'])
 
             for j in objects[0]['journeys']:
-                if "sections" not in j:
+                if not "sections" in j.keys():
                     continue
                 for s in j['sections']:
 
