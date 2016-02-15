@@ -194,11 +194,9 @@ void RAPTOR::first_raptor_loop(const map_stop_point_duration& dep,
             forbidden_uri,
             rt_level);
 
-    cached_next_st.load(data,
-                 clockwise ? departure_datetime : bound,
-                 clockwise ? bound : departure_datetime,
-                 rt_level,
-                 accessibilite_params);
+    cached_next_st.load(clockwise ? departure_datetime : bound,
+                        rt_level,
+                        accessibilite_params);
 
     clear(clockwise, bound);
     init(dep, departure_datetime, clockwise, accessibilite_params.properties);
@@ -500,11 +498,9 @@ RAPTOR::compute_nm_all(const std::vector<std::pair<type::EntryPoint, map_stop_po
                                                  accessibilite_params,
                                                  forbidden_uri,
                                                  rt_level);
-    cached_next_st.load(data,
-                 clockwise ? departure_datetime : bound,
-                 clockwise ? bound : departure_datetime,
-                 rt_level,
-                 accessibilite_params);
+    cached_next_st.load(clockwise ? departure_datetime : bound,
+                        rt_level,
+                        accessibilite_params);
 
     map_stop_point_duration calc_dep_map;
     for (const auto& n_point : (clockwise ? departures : arrivals)) {
@@ -553,11 +549,9 @@ RAPTOR::isochrone(const map_stop_point_duration& departures,
                                                  accessibilite_params,
                                                  forbidden,
                                                  rt_level);
-    cached_next_st.load(data,
-                 clockwise ? departure_datetime : bound,
-                 clockwise ? bound : departure_datetime,
-                 rt_level,
-                 accessibilite_params);
+    cached_next_st.load(clockwise ? departure_datetime : bound,
+                        rt_level,
+                        accessibilite_params);
 
     clear(clockwise, bound);
     init(departures, departure_datetime, clockwise, accessibilite_params.properties);
