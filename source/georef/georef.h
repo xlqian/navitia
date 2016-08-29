@@ -321,7 +321,7 @@ struct GeoRef {
 
     vertex_t nearest_vertex(const type::GeographicalCoord & coordinates, const proximitylist::ProximityList<vertex_t> &prox) const;
     edge_t nearest_edge(const type::GeographicalCoord &coordinates) const;
-    edge_t nearest_edge(const type::GeographicalCoord &coordinates, const proximitylist::ProximityList<vertex_t>& prox, type::idx_t offset = 0, double horizon = 500) const;
+    edge_t nearest_edge(const type::GeographicalCoord &coordinates, const proximitylist::ProximityList<vertex_t>& prox, type::idx_t offset = 0, double horizon = 200) const;
 
     edge_t nearest_edge(const type::GeographicalCoord & coordinates, type::Mode_e mode) const {
         return nearest_edge(coordinates, pl, offsets[mode]);

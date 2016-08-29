@@ -33,6 +33,7 @@ www.navitia.io
 #include "type/type.h"
 #include <vector>
 #include <cmath>
+#include "nanoflann.h"
 
 namespace navitia { namespace proximitylist {
 
@@ -65,7 +66,35 @@ struct ProximityList
             ar & coord & element;
         }
     };
+    struct Cloud {
+        std::vector<Item> items;
+        Cloud(const std::vector<Item>& items):items(items){}
+        inline size_t kdtree_get_point_count() const { return items.size(); }
+        inline double kdtree_distance(const double *p1, const size_t idx_p2, size_t /*size*/) const
+        {
+            GeographicalCoord tmp_coord{p1[0], p1[1]};
+            static const double DEG_TO_RAD = 0.0174532925199432958;
+            const double rad = tmp_coord.lat() * DEG_TO_RAD;
 
+            /*const double coslat = ::cos(tmp_coord.lat() * DEG_TO_RAD)*/;
+            const double coslat  = 1 - rad*rad/2. +  rad*rad* rad*rad/24.- rad*rad* rad*rad*rad*rad/720.;
+            return tmp_coord.approx_sqr_distance(items[idx_p2].coord, coslat);
+        }
+        inline double kdtree_get_pt(const size_t idx, int dim) const
+        {
+            if (dim==0) return items[idx].coord.lon();
+            else return items[idx].coord.lat();
+        }
+        template <class BBOX>
+        bool kdtree_get_bbox(BBOX& /*bb*/) const { return false; }
+    };
+    typedef nanoflann::KDTreeSingleIndexAdaptor<
+            nanoflann::L2_Simple_Adaptor<double, Cloud> ,
+            Cloud,
+            2 /* dim */
+        > my_kd_tree_t;
+    mutable std::unique_ptr<my_kd_tree_t> my_tree=nullptr;
+    mutable std::unique_ptr<Cloud> cloud = nullptr;
     /// Contient toutes les coordonnées de manière à trouver rapidement
     std::vector<Item> items;
 
@@ -78,29 +107,10 @@ struct ProximityList
     }
 
     /// Construit l'indexe
-    void build(){
-        std::sort(items.begin(), items.end(), [](const Item & a, const Item & b){return a.coord < b.coord;});
-    }
+    void build();
 
     /// Retourne tous les éléments dans un rayon de x mètres
-    std::vector< std::pair<T, GeographicalCoord> > find_within(GeographicalCoord coord, double distance = 500) const {
-        double distance_degree = distance / 111320;
-
-        double DEG_TO_RAD = 0.0174532925199432958;
-        double coslat = ::cos(coord.lat() * DEG_TO_RAD);
-
-        auto begin = std::lower_bound(items.begin(), items.end(), coord.lon() - distance_degree / coslat, [](const Item & i, double min){return i.coord.lon() < min;});
-        auto end = std::upper_bound(begin, items.end(), coord.lon() + distance_degree / coslat, [](double max, const Item & i){return max < i.coord.lon();});
-        std::vector< std::pair<T, GeographicalCoord> > result;
-        double max_dist = distance * distance;
-        for(; begin != end; ++begin){
-            if(begin->coord.approx_sqr_distance(coord, coslat) <= max_dist)
-                result.push_back(std::make_pair(begin->element, begin->coord));
-        }
-        std::sort(result.begin(), result.end(), [&coord, &coslat](const std::pair<T, GeographicalCoord> & a, const std::pair<T, GeographicalCoord> & b){return a.second.approx_sqr_distance(coord, coslat) < b.second.approx_sqr_distance(coord, coslat);});
-        return result;
-    }
-
+    std::vector< std::pair<T, GeographicalCoord> > find_within(GeographicalCoord coord, double distance = 500)  const ;
 
     /// Fonction de confort pour retrouver l'élément le plus proche dans l'indexe
     T find_nearest(double lon, double lat) const {
