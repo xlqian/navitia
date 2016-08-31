@@ -167,7 +167,6 @@ class Scenario(new_default.Scenario):
                                    g.origins_fallback[dep_mode],
                                    g.destinations_fallback[arr_mode])
             resp.append(local_resp)
-            """
             direct_path = self._get_direct_path(instance,
                                                 dep_mode,
                                                 request['origin'],
@@ -175,9 +174,10 @@ class Scenario(new_default.Scenario):
                                                 request['datetime'],
                                                 request['clockwise'])
             resp.append(direct_path)
+
             logger.debug("for mode %s|%s we have found %s journeys", dep_mode, arr_mode, len(local_resp.journeys))
             logger.debug("for mode %s|%s we have found %s direct path", dep_mode, arr_mode, len(direct_path.journeys))
-            """
+
         for r in resp:
             fill_uris(r)
         return resp

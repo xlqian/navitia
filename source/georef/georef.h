@@ -383,7 +383,7 @@ struct ProjectionData {
     /// Project the coordinate on the graph
     ProjectionData(const type::GeographicalCoord & coord, const GeoRef &sn, const proximitylist::ProximityList<vertex_t> &prox);
     /// Project the coordinate on the graph corresponding to the transportation mode of the offset
-    ProjectionData(const type::GeographicalCoord & coord, const GeoRef &sn, type::idx_t offset, const proximitylist::ProximityList<vertex_t> &prox, double horizon = 500);
+    ProjectionData(const type::GeographicalCoord & coord, const GeoRef &sn, type::idx_t offset, const proximitylist::ProximityList<vertex_t> &prox, double horizon = 200);
 
     template<class Archive> void serialize(Archive & ar, const unsigned int) {
         ar & vertices & projected & distances & found & real_coord;

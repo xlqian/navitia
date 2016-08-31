@@ -34,6 +34,11 @@ www.navitia.io
 #include <vector>
 #include <cmath>
 #include "nanoflann.h"
+#include <boost/geometry.hpp>
+#include <boost/geometry/geometries/point.hpp>
+#include <boost/geometry/geometries/box.hpp>
+#include <boost/geometry/geometry.hpp>
+#include <boost/geometry/index/rtree.hpp>
 
 namespace navitia { namespace proximitylist {
 
@@ -75,7 +80,6 @@ struct ProximityList
             GeographicalCoord tmp_coord{p1[0], p1[1]};
             static const double DEG_TO_RAD = 0.0174532925199432958;
             const double rad = tmp_coord.lat() * DEG_TO_RAD;
-
             /*const double coslat = ::cos(tmp_coord.lat() * DEG_TO_RAD)*/;
             const double coslat  = 1 - rad*rad/2. +  rad*rad* rad*rad/24.- rad*rad* rad*rad*rad*rad/720.;
             return tmp_coord.approx_sqr_distance(items[idx_p2].coord, coslat);
@@ -95,8 +99,16 @@ struct ProximityList
         > my_kd_tree_t;
     mutable std::unique_ptr<my_kd_tree_t> my_tree=nullptr;
     mutable std::unique_ptr<Cloud> cloud = nullptr;
+
+    typedef boost::geometry::model::point
+        <
+            double, 2, boost::geometry::cs::spherical_equatorial<boost::geometry::degree>
+        > point;
+    typedef std::pair<point, size_t> value;
+    typedef boost::geometry::index::rtree< value, boost::geometry::index::rstar<512> > rtree_t;
+    mutable std::unique_ptr<rtree_t> rtree = nullptr;
     /// Contient toutes les coordonnées de manière à trouver rapidement
-    std::vector<Item> items;
+    mutable std::vector<Item> items;
 
     /// Rajoute un nouvel élément. Attention, il faut appeler build avant de pouvoir utiliser la structure
     void add(GeographicalCoord coord, T element){
@@ -110,7 +122,7 @@ struct ProximityList
     void build();
 
     /// Retourne tous les éléments dans un rayon de x mètres
-    std::vector< std::pair<T, GeographicalCoord> > find_within(GeographicalCoord coord, double distance = 500)  const ;
+    std::vector< std::pair<T, GeographicalCoord> > find_within(GeographicalCoord coord, double distance = 200, bool onlyOne = false)  const ;
 
     /// Fonction de confort pour retrouver l'élément le plus proche dans l'indexe
     T find_nearest(double lon, double lat) const {
@@ -119,7 +131,7 @@ struct ProximityList
 
     /// Retourne l'élément le plus proche dans tout l'indexe
     T find_nearest(GeographicalCoord coord, double max_dist = 500) const {
-        auto temp = find_within(coord, max_dist);
+        auto temp = find_within(coord, max_dist, true);
         if(temp.empty())
             throw NotFound();
         else

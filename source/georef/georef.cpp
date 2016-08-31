@@ -305,7 +305,7 @@ ProjectionData::ProjectionData(const type::GeographicalCoord & coord, const GeoR
     edge_t edge;
     found = true;
     try {
-        edge = sn.nearest_edge(coord, prox, offset, horizon);
+        edge = sn.nearest_edge(coord, prox, offset, 100);
     } catch(proximitylist::NotFound) {
         found = false;
         vertices[Direction::Source] = std::numeric_limits<vertex_t>::max();
@@ -615,13 +615,15 @@ edge_t GeoRef::nearest_edge(const type::GeographicalCoord & coordinates) const {
 edge_t GeoRef::nearest_edge(const type::GeographicalCoord & coordinates, const proximitylist::ProximityList<vertex_t>& prox, type::idx_t offset, double horizon) const {
     boost::optional<edge_t> res;
     float min_dist = 0.;
-    for (const auto pair_coord : prox.find_within(coordinates, horizon)) {
+    for (const auto pair_coord : prox.find_within(coordinates, horizon, true)) {
         //we increment the index to get the vertex in the other graph
         const auto u = pair_coord.first + offset;
 
-        BOOST_FOREACH (edge_t e, boost::out_edges(u, graph)) {
+        BOOST_FOREACH (const edge_t& e, boost::out_edges(u, graph)) {
             const auto v = target(e, graph);
-            float cur_dist = coordinates.project(graph[u].coord, graph[v].coord).second;
+            const double rad = pair_coord.second.lat() * 0.0174532925199432958;
+            const double coslat  = 1 - rad*rad/2. +  rad*rad* rad*rad/24.- rad*rad* rad*rad*rad*rad/720.;
+            float cur_dist = coordinates.approx_project(graph[u].coord, graph[v].coord, coslat).second;
             if (!res || cur_dist < min_dist) {
                 min_dist = cur_dist;
                 res = e;
