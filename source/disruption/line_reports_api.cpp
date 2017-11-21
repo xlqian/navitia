@@ -128,6 +128,10 @@ void line_reports(navitia::PbCreator& pb_creator,
     }
     const auto total_results = line_reports.size();
     std::vector<LineReport> paged_line_reports = paginate(line_reports, count, start_page);
+    std::sort(paged_line_reports.begin(),
+    		  paged_line_reports.end(),
+              [&](const LineReport& lhs, const LineReport& rhs){
+                  return *lhs.line < *rhs.line;});
     for (const auto& line_report: paged_line_reports) {
         line_report.to_pb(pb_creator, depth);
     }

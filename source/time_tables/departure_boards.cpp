@@ -42,6 +42,33 @@ www.navitia.io
 
 namespace pt = boost::posix_time;
 
+namespace {
+struct LineCompare{
+    const nt::Data& data;
+    LineCompare(const nt::Data& data): data(data){}
+    using sp_dt_pair = std::pair<navitia::timetables::stop_point_route,
+            navitia::timetables::vector_dt_st>;
+    bool operator()(const sp_dt_pair& lhs, const sp_dt_pair& rhs) const {
+
+        const auto* l_line = data.pt_data->routes[lhs.first.second.val]->line;
+        const auto* r_line = data.pt_data->routes[rhs.first.second.val]->line;
+        if (l_line != r_line) {
+            return *l_line < *r_line;
+        }
+        const auto& l_sp_uri = data.pt_data->stop_points[lhs.first.first.val]->uri;
+        const auto& r_sp_uri = data.pt_data->stop_points[rhs.first.first.val]->uri;
+        if (l_sp_uri != r_sp_uri) {
+            return l_sp_uri < r_sp_uri;
+        }
+        const auto& l_route_uri = data.pt_data->routes[lhs.first.second.val]->uri;
+        const auto& r_route_uri = data.pt_data->routes[rhs.first.second.val]->uri;
+        return l_route_uri < r_route_uri;
+    }
+};
+}
+
+
+
 namespace navitia { namespace timetables {
 
 static bool is_last_stoptime(const nt::StopTime* stop_time, const nt::StopPoint* stp){
@@ -67,7 +94,7 @@ static bool is_flagged_partial_terminus(const PbCreator& pb_creator,
 static void
 render(PbCreator& pb_creator,
           const std::map<stop_point_route, pbnavitia::ResponseStatus>& response_status,
-          const std::map<stop_point_route, vector_dt_st>& map_route_stop_point,
+          const boost::container::flat_set<std::pair<stop_point_route, vector_dt_st>, LineCompare>& map_route_stop_point,
           DateTime datetime,
           DateTime max_datetime,
           boost::optional<const std::string> calendar_id,
@@ -199,7 +226,10 @@ void departure_board(PbCreator& pb_creator, const std::string& request,
     //  <stop_point_route, status>
     std::map<stop_point_route, pbnavitia::ResponseStatus> response_status;
 
-    std::map<stop_point_route, vector_dt_st> map_route_stop_point;
+    auto comp = LineCompare{*pb_creator.data};
+
+    boost::container::flat_set<std::pair<stop_point_route, vector_dt_st>, LineCompare>
+	map_route_stop_point{comp};
 
     //Mapping route/stop_point
     boost::container::flat_set<stop_point_route> sps_routes;
@@ -263,7 +293,7 @@ void departure_board(PbCreator& pb_creator, const std::string& request,
             response_status[sp_route] = resp_status;
         }
 
-        map_route_stop_point[sp_route] = stop_times;
+        map_route_stop_point.emplace(sp_route, stop_times);
     }
 
     render(pb_creator, response_status, map_route_stop_point, handler.date_time, handler.max_datetime,
