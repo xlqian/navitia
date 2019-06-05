@@ -26,6 +26,9 @@ project(Kraken)
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake_modules")
 set(CMAKE_INSTALL_PREFIX "/usr")
 
+# Should I build the tests?
+OPTION(CMAKE_BUILD_TESTING "Build tests." true)
+
 # project version,
 # get git revision as the version number
 include(GetGitRevisionDescription)
@@ -70,11 +73,14 @@ add_subdirectory(tyr)
 add_subdirectory(sql)
 add_subdirectory(disruption)
 add_subdirectory(calendar)
-add_subdirectory(tests)
 add_subdirectory(scripts)
 add_subdirectory(cities)
 add_subdirectory(tools)
 add_subdirectory(equipment)
+
+if (${CMAKE_BUILD_TESTING})
+    add_subdirectory(tests)
+endif()
 
 include(CheckIncludeFiles)
 include(CheckIncludeFileCXX)

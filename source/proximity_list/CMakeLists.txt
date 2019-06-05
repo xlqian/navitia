@@ -2,4 +2,6 @@
 add_library(proximitylist proximity_list.cpp proximitylist_api.cpp ${CMAKE_SOURCE_DIR}/third_party/lz4/lz4hc.c ${CMAKE_SOURCE_DIR}/third_party/lz4/lz4.c)
 add_dependencies(proximitylist protobuf_files)
 target_link_libraries(proximitylist)
-add_subdirectory(tests)
+if (${CMAKE_BUILD_TESTING})
+    add_subdirectory(tests)
+endif()

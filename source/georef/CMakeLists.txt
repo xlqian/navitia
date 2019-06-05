@@ -17,4 +17,6 @@ add_library(georef ${GEOREF_SRC})
 
 target_link_libraries(georef types proximitylist utils)
 
-add_subdirectory(tests)
+if (${CMAKE_BUILD_TESTING})
+    add_subdirectory(tests)
+endif()

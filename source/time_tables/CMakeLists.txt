@@ -7,6 +7,7 @@ add_library(time_tables ${TIME_TABLES_SRC})
 target_link_libraries(time_tables utils types routing autocomplete proximitylist ptreferential georef thermometer)
 
 
-add_subdirectory(tests)
-
+if (${CMAKE_BUILD_TESTING})
+    add_subdirectory(tests)
+endif()
 

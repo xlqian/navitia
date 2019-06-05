@@ -30,4 +30,6 @@ target_link_libraries(kraken workers types proximitylist
 add_dependencies(kraken protobuf_files)
 
 install(TARGETS kraken DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
-add_subdirectory(tests)
+if (${CMAKE_BUILD_TESTING})
+    add_subdirectory(tests)
+endif()

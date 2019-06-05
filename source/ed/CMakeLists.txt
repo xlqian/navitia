@@ -38,7 +38,10 @@ add_library(ed2nav_lib ed2nav.cpp ed_reader.cpp)
 add_executable(ed2nav ed2nav_main.cpp)
 target_link_libraries(ed2nav ed2nav_lib types connectors ${PQXX_LIB} data georef routing fare pb_lib utils autocomplete ${BOOST_LIBS} log4cplus protobuf tcmalloc)
 
-add_subdirectory(tests)
+if (${CMAKE_BUILD_TESTING})
+    add_subdirectory(tests)
+endif()
+
 add_subdirectory(connectors)
 
 add_executable(geopal2ed geopal2ed.cpp)

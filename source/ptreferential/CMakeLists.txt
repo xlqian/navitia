@@ -6,4 +6,6 @@ SET(PTREF_SRC
   ptref_graph.cpp)
 add_library(ptreferential ${PTREF_SRC})
 
-add_subdirectory(tests)
+if (${CMAKE_BUILD_TESTING})
+    add_subdirectory(tests)
+endif()

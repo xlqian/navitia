@@ -4,4 +4,7 @@ SET(CALENDAR_SRC
 )
 add_library(calendar_api ${CALENDAR_SRC})
 add_dependencies(calendar_api protobuf_files)
-add_subdirectory(tests)
+
+if (${CMAKE_BUILD_TESTING})
+    add_subdirectory(tests)
+endif()

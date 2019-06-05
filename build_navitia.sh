@@ -201,7 +201,7 @@ fi
 echo "** building navitia"
 navitia_build_dir="$navitia_dir"/release
 mkdir -p "$navitia_build_dir" && cd "$navitia_build_dir"
-cmake -DCMAKE_BUILD_TYPE=Release ../source
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_BUILD_TESTING=FALSE ../source
 make -j$(($(grep -c '^processor' /proc/cpuinfo)+1))
 
 
